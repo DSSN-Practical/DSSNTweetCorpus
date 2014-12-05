@@ -61,12 +61,10 @@ class Corpus:
                 if 'gameinsight' in tweet['text']:
                     print(tweet['user']['screen_name'] + ':\n' + tweet['text'] + '\n\n')
 
-    def ouputUserFollowers(self, auth, name):
+    def returnUserFollowers(self, auth, name):
         t = Twitter(auth=auth)
         users = t.followers.list(cursor=-1,screen_name=name,skip_status = True, include_user_entities=False)
         return users['users']
-        #for user in users['users']:
-        #    print(user['screen_name'])
 
     def outputUserTimeline(self, auth, name):
         t = Twitter(auth=auth)
@@ -79,12 +77,9 @@ def main():
     corpus = Corpus('keys.txt')
     name = 'sicarius'
     corpus.outputUserTimeline(corpus.oAuthDance(corpus.readKeys()), name)
-    for user in corpus.ouputUserFollowers(corpus.oAuthDance(corpus.readKeys()), name):
+    for user in corpus.returnUserFollowers(corpus.oAuthDance(corpus.readKeys()), name):
         if (not user['protected']):
             corpus.outputUserTimeline(corpus.oAuthDance(corpus.readKeys()), user['screen_name'])
-            #for user2 in corpus.ouputUserFollowers(corpus.oAuthDance(corpus.readKeys()), user['screen_name']):
-            #    if(not user2['protected']):
-            #        corpus.outputUserTimeline(corpus.oAuthDance(corpus.readKeys()), user2['screen_name'])
 
 #call if module is called as main
 if __name__ == '__main__':
