@@ -3,14 +3,13 @@
 Object class for tweets
 """
 
+
 class Tweet(object):
 
-    id = 0
+    tid = 0
     text = ''
-    screen_name = ''
     hashtags = []
-    isRT = False
-    isFriendRequest = False
-
-    def __init__(self, id):
-        self.id = id
+    createdAt = ''
+    isReply = False
+    replyTo = None
+    retweeted = False

@@ -30,6 +30,7 @@ from user import User
 class Corpus:
 
     users = []
+    ids = []
 
     def __init__(self, keys):
         self.keys = keys

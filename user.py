@@ -3,14 +3,16 @@
 Object class User
 """
 
+
 class User(object):
 
-    tid = 0
+    uid = 0
     screen_name = ''
     name = ''
     createdAt = ''
     description = ''
-    followers = []
-    friends = []
+    visibleFollowers = []
+    visibleFriends = []
     nrFriends = 0
     nrFollowers = 0
+    tweets = []
