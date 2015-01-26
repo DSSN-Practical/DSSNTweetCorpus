@@ -5,14 +5,12 @@ Object class User
 
 class User(object):
 
-    id = 0
+    tid = 0
     screen_name = ''
-    followers = ''
+    name = ''
     createdAt = ''
+    description = ''
     followers = []
     friends = []
-    nrFriends = len(friends)
-    nrFollowers = len(followers)
-
-    def __init__(self):
-        self.id = id
+    nrFriends = 0
+    nrFollowers = 0

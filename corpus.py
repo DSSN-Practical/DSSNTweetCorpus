@@ -29,6 +29,8 @@ from user import User
 
 class Corpus:
 
+    users = []
+
     def __init__(self, keys):
         self.keys = keys
 
@@ -58,8 +60,8 @@ class Corpus:
         return timeline
 
     def getUserFollowers(self, twitter, name):
-        users = twitter.followers.list(cursor=-1, screen_name=name, skip_status=True, include_user_entities=False)
-        return users['users']
+        followers = twitter.followers.list(cursor=-1, screen_name=name, skip_status=True, include_user_entities=False)
+        return followers
 
 
 """

@@ -22,13 +22,27 @@ class Handler:
             print('An Error Occured, please restart the application.')
 
     def addUsers(self, name):
-        followers = self.twitter.followers.list(cursor=-1, screen_name=name, skip_status=True, include_user_entities=True)
-        print (followers)
+        try:
+            followers = self.twitter.followers.list(cursor=-1, screen_name=name,count = 200, skip_status=True, include_user_entities=True)
+        except urllib.request.HTTPError:
+            print('An Error Occured, please restart the application.')
+        for tUser in followers['users']:
+            user = User()
+            user.tid = tUser['id']
+            user.screen_name = tUser['screen_name']
+            user.name = tUser['name']
+            user.description = tUser['description']
+            user.createdAt = tUser['created_at']
+            user.nrFriends = tUser['friends_count']
+            user.nrFollowers = tUser['followers_count']
+            self.corpus.users.append(user)
 
 
 def main():
     handler = Handler()
     handler.addUsers(handler.startUser)
+    for user in handler.corpus.users:
+        print (user.name + ': ' + user.description)
 
 if __name__ == '__main__':
     main()
