@@ -65,10 +65,11 @@ class Handler:
     def startHandling(self, name):
         i = 0
         self.addUsers(name)
-        for user in self.corpus.users:
+        for k, user in enumerate(self.corpus.users):
             if(not user.protected):
                 self.addUserTweets(user)
-                print('')
+                sys.stdout.write("\r%d%%" % int((k * 100) / len(self.corpus.users)))
+                sys.stdout.flush()
             else:
                 continue
         while(True):
@@ -93,30 +94,32 @@ class Handler:
 
     def createOutputFile(self):
         self.createUserEntry()
-        string = minidom.parseString(ElementTree.tostring(self.root, encoding='unicode')).toprettyxml()
-        output = open('ouput_' + str(datetime.datetime.now()), 'w+')
+        xmlString = ElementTree.tostring(self.root, encoding='unicode')
+        xml = minidom.parseString(xmlString)
+        string = xml.toprettyxml()
+        output = open('ouput_' + str(datetime.datetime.now()) + '.xml', 'w+')
         output.write(string)
         output.close
 
     def createUserEntry(self):
         for user in self.corpus.users:
-            entry = ElementTree.SubElement(root, 'user')
+            entry = ElementTree.SubElement(self.root, 'user')
             ElementTree.SubElement(entry, 'id').text = str(user.uid)
-            ElementTree.SubElement(entry, 'name').text = user.name
-            ElementTree.SubElement(entry, 'screen name').text = user.screen_name
-            ElementTree.SubElement(entry, 'created at').text = user.createdAt
-            ElementTree.SubElement(entry, 'description').text = user.description
+            ElementTree.SubElement(entry, 'name').text = str(user.name)
+            ElementTree.SubElement(entry, 'screen name').text = str(user.screen_name)
+            ElementTree.SubElement(entry, 'created at').text = str(user.createdAt)
+            ElementTree.SubElement(entry, 'description').text = str(user.description)
             ElementTree.SubElement(entry, 'Number of friends').text = str(user.nrFriends)
             ElementTree.SubElement(entry, 'Number of followers').text = str(user.nrFollowers)
             ElementTree.SubElement(entry, 'protected').text = str(user.protected)
-            timeline = ElementTree.SubElement(enty, 'timeline')
+            timeline = ElementTree.SubElement(entry, 'timeline')
             tweet = ElementTree.SubElement(timeline, 'tweet')
             for tweetEntry in user.tweets:
-                ElementTree.SubElement(tweet, 'id').text = tweetEntry.tid
+                ElementTree.SubElement(tweet, 'id').text = str(tweetEntry.tid)
                 ElementTree.SubElement(tweet, 'text').text = tweetEntry.text
                 for hashtag in tweetEntry.hashtags:
-                    ElementTree.SubElement(tweet, 'hashtag').text = hashtag
-                ElementTree.SubElement(tweet, 'created at').text = tweetEntry.createdAt
+                    ElementTree.SubElement(tweet, 'hashtag').text = str(hashtag)
+                ElementTree.SubElement(tweet, 'created at').text = str(tweetEntry.createdAt)
                 ElementTree.SubElement(tweet, 'is retweet').text = str(tweetEntry.retweeted)
                 if (tweetEntry.isReply):
                     ElementTree.SubElement(tweet, 'reply to id').text = str(tweetEntry.replyTo)
