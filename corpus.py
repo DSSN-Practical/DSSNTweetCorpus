@@ -21,8 +21,10 @@ Problems:  Rate limit. Rate limit is set for a 15 minute window. statuses calls 
 
 from twitter import *
 import os
-import urllib
-import shutil
+from tweet import Tweet
+from user import User
+#import urllib
+#import shutil
 
 
 class Corpus:
@@ -51,6 +53,25 @@ class Corpus:
         auth = OAuth(oauth_token, oauth_token_secret, CONSUMER_KEY, CONSUMER_SECRET)
         return auth
 
+    def getUserTimeline(self, twitter, name):
+        timeline = twitter.statuses.user_timeline(screen_name=name)
+        return timeline
+
+    def getUserFollowers(self, twitter, name):
+        users = twitter.followers.list(cursor=-1, screen_name=name, skip_status=True, include_user_entities=False)
+        return users['users']
+
+
+"""
+------------------------------------
+----------- Old & Unused -----------
+------------------------------------
+
+    def outputUserTimeline(self, twitter, name):
+        tweets = t.statuses.user_timeline(screen_name=name)
+        for tweet in tweets:
+            print(str(tweet['user']['screen_name']) + '\t' + str(tweet['created_at']) + '\t' + str(tweet['user']['time_zone']) + ':\n' + str(tweet['text']))
+
     #creating a raw output of tweets
     def outputStream(self, auth):
         twitter_stream = TwitterStream(auth=auth, domain='stream.twitter.com')
@@ -60,22 +81,12 @@ class Corpus:
                 #just to filter some tweets
                 if 'gameinsight' in tweet['text']:
                     print(tweet['user']['screen_name'] + ':\n' + tweet['text'] + '\n\n')
-
-    def returnUserFollowers(self, auth, name):
-        t = Twitter(auth=auth)
-        users = t.followers.list(cursor=-1,screen_name=name,skip_status = True, include_user_entities=False)
-        return users['users']
-
-    def outputUserTimeline(self, auth, name):
-        t = Twitter(auth=auth)
-        tweets = t.statuses.user_timeline(screen_name = name)
-        for tweet in tweets:
-            print(str(tweet['user']['screen_name']) + '\t' +str( tweet['created_at']) + '\t' + str(tweet['user']['time_zone']) + ':\n' + str(tweet['text']))
-
+"""
 
 def main():
     corpus = Corpus('keys.txt')
-    name = 'sicarius'
+    name = 'white_gecko'
+    twitter = Twitter(auth=auth)
     corpus.outputUserTimeline(corpus.oAuthDance(corpus.readKeys()), name)
     for user in corpus.returnUserFollowers(corpus.oAuthDance(corpus.readKeys()), name):
         if (not user['protected']):
