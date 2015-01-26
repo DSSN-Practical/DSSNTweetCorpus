@@ -69,12 +69,6 @@ class Corpus:
 ------------------------------------
 ----------- Old & Unused -----------
 ------------------------------------
-
-    def outputUserTimeline(self, twitter, name):
-        tweets = t.statuses.user_timeline(screen_name=name)
-        for tweet in tweets:
-            print(str(tweet['user']['screen_name']) + '\t' + str(tweet['created_at']) + '\t' + str(tweet['user']['time_zone']) + ':\n' + str(tweet['text']))
-
     #creating a raw output of tweets
     def outputStream(self, auth):
         twitter_stream = TwitterStream(auth=auth, domain='stream.twitter.com')
@@ -85,16 +79,3 @@ class Corpus:
                 if 'gameinsight' in tweet['text']:
                     print(tweet['user']['screen_name'] + ':\n' + tweet['text'] + '\n\n')
 """
-
-def main():
-    corpus = Corpus('keys.txt')
-    name = 'white_gecko'
-    twitter = Twitter(auth=auth)
-    corpus.outputUserTimeline(corpus.oAuthDance(corpus.readKeys()), name)
-    for user in corpus.returnUserFollowers(corpus.oAuthDance(corpus.readKeys()), name):
-        if (not user['protected']):
-            corpus.outputUserTimeline(corpus.oAuthDance(corpus.readKeys()), user['screen_name'])
-
-#call if module is called as main
-if __name__ == '__main__':
-    main()
