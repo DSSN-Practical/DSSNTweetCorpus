@@ -8,6 +8,7 @@ from user import User
 from corpus import Corpus
 from xml.parsers.expat import ExpatError
 from bs4 import BeautifulSoup
+#See http://www.crummy.com/software/BeautifulSoup/
 
 import urllib
 import datetime
@@ -100,7 +101,7 @@ class Handler:
     def createOutputFile(self):
         xmlString = ElementTree.tostring(self.root, encoding="UTF-8")
         string = BeautifulSoup(xmlString).prettify()
-        output = open('ouput_' + str(datetime.datetime.now()) + '.xml', 'w+')
+        output = open('output_' + str(datetime.datetime.now()) + '.xml', 'w+')
         output.write(string)
         output.close
 
