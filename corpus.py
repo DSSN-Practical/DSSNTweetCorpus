@@ -21,14 +21,20 @@ Problems:  Rate limit. Rate limit is set for a 15 minute window. statuses calls 
 
 from twitter import *
 import os
-from tweet import Tweet
-from user import User
+import time
+import sys
+#from tweet import Tweet
+#from user import User
 #import urllib
 #import shutil
 
 
 class Corpus:
 
+    FOLLOWER_RATE_LIMIT = 180
+    TIMELINE_RATE_LIMIT = 15
+    currentTimeline = 0
+    currentFollower = 0
     users = []
     ids = []
 
@@ -57,25 +63,28 @@ class Corpus:
         return auth
 
     def getUserTimeline(self, twitter, name):
-        timeline = twitter.statuses.user_timeline(screen_name=name)
+        if self.currentTimeline < self.TIMELINE_RATE_LIMIT:
+            timeline = twitter.statuses.user_timeline(screen_name=name)
+            self.currentTimeline = self.currentTimeline + 1
+        else:
+            self.halt()
+            self.getUserTimeline(twitter, name)
         return timeline
 
     def getUserFollowers(self, twitter, name):
-        followers = twitter.followers.list(cursor=-1, screen_name=name, skip_status=True, include_user_entities=False)
+        if self.currentFollower < self.FOLLOWER_RATE_LIMIT:
+            followers = twitter.followers.list(cursor=-1, screen_name=name, count=200, skip_status=True, include_user_entities=True)
+            self.currentFollower = self.currentFollower + 1
+        else:
+            self.halt()
+            self.getUserFollowers(twitter, name)
         return followers
 
-
-"""
-------------------------------------
------------ Old & Unused -----------
-------------------------------------
-    #creating a raw output of tweets
-    def outputStream(self, auth):
-        twitter_stream = TwitterStream(auth=auth, domain='stream.twitter.com')
-        stream = twitter_stream.statuses.sample()
-        for tweet in stream:
-            if 'text' in tweet:
-                #just to filter some tweets
-                if 'gameinsight' in tweet['text']:
-                    print(tweet['user']['screen_name'] + ':\n' + tweet['text'] + '\n\n')
-"""
+    def halt(self):
+        print('Rate limit exceeded, please wait:\n')
+        for i in range(900):
+            time.sleep(1)
+            sys.stdout.write("\r%d%%" % int(i / 9))
+            sys.stdout.flush()
+        self.currentTimeline = 0
+        self.currentFollower = 0

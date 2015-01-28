@@ -2,11 +2,11 @@
 """
 Class for handling the data
 """
-from twitter import *
 from user import User
 from tweet import Tweet
 from corpus import Corpus
 from friender import Friender
+from twitter import *
 from bs4 import BeautifulSoup
 #See http://www.crummy.com/software/BeautifulSoup/
 
@@ -21,6 +21,7 @@ class Handler:
     corpus = Corpus('keys.txt')
     startUser = input('Insert the screen_name of the initial twitter user: ')
     twitter = Twitter(auth=corpus.oAuthDance(corpus.readKeys()))
+    steps = int(input('Insert the amount of recursions: '))
 
     def __init__(self):
         self.root = ElementTree.Element('file')
@@ -47,7 +48,7 @@ class Handler:
 
     def addUsers(self, name):
         try:
-            followers = self.twitter.followers.list(cursor=-1, screen_name=name, count=200, skip_status=True, include_user_entities=True)
+            followers = self.corpus.getUserFollowers(self.twitter, name)
         except urllib.request.HTTPError:
             print('An Error Occured, please restart the application.')
         for tUser in followers['users']:
@@ -69,34 +70,33 @@ class Handler:
                 self.corpus.users.append(user)
 
     def startHandling(self, name):
-        i = -1
         self.addUsers(name)
+        for i in range(self.steps):
+            if (self.corpus.users[i].protected):
+                continue
+            else:
+                self.addUsers(self.corpus.users[i].screen_name)
+            #yn = input('\nGather new users? [y/n]:\t')
+            #if (not self.corpus.users[i].protected):
+                #i = i + 1
+                #self.startHandling(self.corpus.users[i].screen_name)
+                #break
+        print('Reading tweets from all users, please wait:\n')
+        for k, user in enumerate(self.corpus.users):
+            if(not user.protected):
+                self.addUserTweets(user)
+            sys.stdout.write("\r%d%%" % int((k * 100) / len(self.corpus.users)))
+            sys.stdout.flush()
+        friender = Friender(self.corpus)
+        friender.friendHandler()
+        for user in self.corpus.users:
+            self.createUserEntry(user)
         while(True):
-            yn = input('\nGather new users? [y/n]:\t')
-            if (yn is 'y' and not self.corpus.users[i].protected):
-                i = i + 1
-                self.startHandling(self.corpus.users[i].screen_name)
+            yn = input('\nCreate outputfile? [y/n]:\t')
+            if(yn is 'y'):
+                self.createOutputFile()
                 break
-            elif (yn is 'n'):
-                print('Reading tweets from all users, please wait:\n')
-                for k, user in enumerate(self.corpus.users):
-                    if(not user.protected):
-                        self.addUserTweets(user)
-                    sys.stdout.write("\r%d%%" % int((k * 100) / len(self.corpus.users)))
-                    sys.stdout.flush()
-                friender = Friender(self.corpus)
-                friender.friendHandler()
-                for user in self.corpus.users:
-                    self.createUserEntry(user)
-                while(True):
-                    yn2 = input('\nCreate outputfile? [y/n]:\t')
-                    if(yn2 is 'y'):
-                        self.createOutputFile()
-                        break
-                    elif(yn2 is 'n'):
-                        break
-                    else:
-                        print('Please insert y or n')
+            elif(yn is 'n'):
                 break
             else:
                 print('Please insert y or n')
