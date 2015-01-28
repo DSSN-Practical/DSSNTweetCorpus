@@ -12,5 +12,7 @@ class Tweet(object):
     isReply = False
     replyTo = None
     retweeted = False
+    isFriendRequest = False
+    FriendRequestToId = 0
     #nto for now causes errors
     hashtags = []

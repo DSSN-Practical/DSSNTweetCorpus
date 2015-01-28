@@ -3,19 +3,17 @@
 Class for handling the data
 """
 from twitter import *
-from tweet import Tweet
 from user import User
+from tweet import Tweet
 from corpus import Corpus
-from xml.parsers.expat import ExpatError
+from friender import Friender
 from bs4 import BeautifulSoup
 #See http://www.crummy.com/software/BeautifulSoup/
 
 import urllib
 import datetime
 import xml.etree.ElementTree as ElementTree
-import xml.dom.minidom as minidom
 import sys
-import re
 
 
 class Handler:
@@ -84,9 +82,12 @@ class Handler:
                 for k, user in enumerate(self.corpus.users):
                     if(not user.protected):
                         self.addUserTweets(user)
-                    self.createUserEntry(user)
                     sys.stdout.write("\r%d%%" % int((k * 100) / len(self.corpus.users)))
                     sys.stdout.flush()
+                friender = Friender(self.corpus)
+                friender.friendHandler()
+                for user in self.corpus.users:
+                    self.createUserEntry(user)
                 while(True):
                     yn2 = input('\nCreate outputfile? [y/n]:\t')
                     if(yn2 is 'y'):
@@ -117,6 +118,10 @@ class Handler:
         ElementTree.SubElement(entry, 'Number_of_friends').text = str(user.nrFriends)
         ElementTree.SubElement(entry, 'Number_of_followers').text = str(user.nrFollowers)
         ElementTree.SubElement(entry, 'protected').text = str(user.protected)
+        if (len(user.friends) > 0):
+            friends = ElementTree.SubElement(entry, 'friends')
+            for friend in user.friends:
+                ElementTree.SubElement(friends, 'id').text = str(friend)
         if (len(user.tweets) > 0):
             timeline = ElementTree.SubElement(entry, 'timeline')
             for tweetEntry in user.tweets:
@@ -125,6 +130,8 @@ class Handler:
                 ElementTree.SubElement(tweet, 'text').text = tweetEntry.text
                 ElementTree.SubElement(tweet, 'created_at').text = str(tweetEntry.createdAt)
                 ElementTree.SubElement(tweet, 'is_retweet').text = str(tweetEntry.retweeted)
+                if (tweetEntry.isFriendRequest):
+                        ElementTree.SubElement(tweet, 'friendrequest_to_id').text = str(tweetEntry.FriendRequestToId)
                 if (tweetEntry.isReply):
                     ElementTree.SubElement(tweet, 'reply_to_id').text = str(tweetEntry.replyTo)
                 #for hashtag in tweetEntry.hashtags:

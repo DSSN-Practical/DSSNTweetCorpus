@@ -11,10 +11,9 @@ class User(object):
     name = ''
     createdAt = ''
     description = ''
-    visibleFollowers = []
-    visibleFriends = []
     nrFriends = 0
     nrFollowers = 0
     tweets = []
+    friends = []
     #only used for GET timeline
     protected = False
