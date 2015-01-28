@@ -56,35 +56,37 @@ class Handler:
             user = User()
             iid = tUser['id']
             if (iid in self.corpus.ids):
+                print('ding')
                 continue
             else:
                 user.uid = iid
                 self.corpus.ids.append(iid)
-            user.screen_name = tUser['screen_name']
-            user.name = tUser['name']
-            user.description = tUser['description']
-            user.createdAt = tUser['created_at']
-            user.nrFriends = tUser['friends_count']
-            user.nrFollowers = tUser['followers_count']
-            user.protected = tUser['protected']
-            self.corpus.users.append(user)
+                user.screen_name = tUser['screen_name']
+                user.name = tUser['name']
+                user.description = tUser['description']
+                user.createdAt = tUser['created_at']
+                user.nrFriends = tUser['friends_count']
+                user.nrFollowers = tUser['followers_count']
+                user.protected = tUser['protected']
+                self.corpus.users.append(user)
 
     def startHandling(self, name):
-        i = 0
+        i = -1
         self.addUsers(name)
-        for k, user in enumerate(self.corpus.users):
-            if(not user.protected):
-                self.addUserTweets(user)
-            self.createUserEntry(user)
-            sys.stdout.write("\r%d%%" % int((k * 100) / len(self.corpus.users)))
-            sys.stdout.flush()
         while(True):
             yn = input('\nGather new users? [y/n]:\t')
             if (yn is 'y' and not self.corpus.users[i].protected):
-                self.startHandling(self.corpus.users[i].screen_name)
                 i = i + 1
+                self.startHandling(self.corpus.users[i].screen_name)
                 break
             elif (yn is 'n'):
+                print('Reading tweets from all users, please wait:\n')
+                for k, user in enumerate(self.corpus.users):
+                    if(not user.protected):
+                        self.addUserTweets(user)
+                    self.createUserEntry(user)
+                    sys.stdout.write("\r%d%%" % int((k * 100) / len(self.corpus.users)))
+                    sys.stdout.flush()
                 while(True):
                     yn2 = input('\nCreate outputfile? [y/n]:\t')
                     if(yn2 is 'y'):
