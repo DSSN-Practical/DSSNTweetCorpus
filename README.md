@@ -6,10 +6,16 @@ Creates a live text corpus from the current (or archived) tweets from twitter.co
 Usage
 ------
 
-In oder to run the Project you need to have the python Twitter-API-Tool from [here](http://mike.verdone.ca/twitter/)
-Furthermore you will need the tokens and consumer keys for the Twitter-Developer-API, which you can get if you ask me.
+In oder to run the Project you need to have the python Twitter-API-Tool from [here](http://mike.verdone.ca/twitter/) and BeautifulSauce from [here](http://www.crummy.com/software/BeautifulSoup/). Furthermore you will need the tokens and consumer keys for the Twitter-Developer-API, which you can get if you ask me.
 
 Current Output
 ------
 
-Since it is unclear for now what format the text corpus should have to operate well with the Bot that handles the text or how the structure of the architecture will be the project will currently open up the public stream of twitter and will ouput all tweets that contain '#vote5sos' since it is the current most popular hashtag, plus the screenname of the user.
+Currently the programm will prompt you to insert the screen name of an initial user. All the followers of that user will be inserted into a list. For every user the current timeline (aka latest tweets) will be called, if the user has an unprotected profile. The programm will prompt if he shall gather more users, if so the same method is called again with the next user from the list. Currently a simple HTML/XML file can be created as an output. Though the size is quite high currently and can take time to safe. 
+
+Todo
+------
+
+- File output is optional though could be better.
+- workaround for following / friending issue.
+- maybe provide easy interface if current object format isn't right.
