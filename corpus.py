@@ -31,8 +31,8 @@ import sys
 
 class Corpus:
 
-    FOLLOWER_RATE_LIMIT = 180
-    TIMELINE_RATE_LIMIT = 15
+    FOLLOWER_RATE_LIMIT = 15
+    TIMELINE_RATE_LIMIT = 180
     currentTimeline = 0
     currentFollower = 0
     users = []
@@ -68,16 +68,17 @@ class Corpus:
             self.currentTimeline = self.currentTimeline + 1
         else:
             self.halt()
-            self.getUserTimeline(twitter, name)
+            timeline = self.getUserTimeline(twitter, name)
         return timeline
 
     def getUserFollowers(self, twitter, name):
         if self.currentFollower < self.FOLLOWER_RATE_LIMIT:
             followers = twitter.followers.list(cursor=-1, screen_name=name, count=200, skip_status=True, include_user_entities=True)
             self.currentFollower = self.currentFollower + 1
+            print (self.currentFollower)
         else:
             self.halt()
-            self.getUserFollowers(twitter, name)
+            followers = self.getUserFollowers(twitter, name)
         return followers
 
     def halt(self):

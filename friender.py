@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from tweet import Tweet
-from user import User
-from corpus import Corpus
+#from tweet import Tweet
+#from user import User
+#from corpus import Corpus
 import random
 
 
