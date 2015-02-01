@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Object class User
+Object class User contains all relevant meta-data of a single user
+
+@author: Robert R.
 """
 
 

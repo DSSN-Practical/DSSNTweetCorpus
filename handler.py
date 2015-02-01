@@ -1,6 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-Class for handling the data
+Class for handling the data. It contains the __main__ method.
+This class is used for getting meta-data from Twitter and create respectively
+user and tweet objects.
+
+Dependencies:     python twitter API-tools from: http://mike.verdone.ca/twitter/
+                  Beautifulsauce for XML parsing from: http://www.crummy.com/software/BeautifulSoup/
+                  consumer keys and tokens for the APP in order to use twitters API
+
+@author: Robert R.
 """
 from user import User
 from tweet import Tweet
@@ -17,16 +25,18 @@ import sys
 
 
 class Handler:
+    """Authentification, prompt for initial user and prompt for iterations on creating the object"""
 
     corpus = Corpus('keys.txt')
     startUser = input('Insert the screen_name of the initial twitter user: ')
     twitter = Twitter(auth=corpus.oAuthDance(corpus.readKeys()))
-    steps = int(input('Insert the amount of recursions: '))
+    steps = int(input('Insert the amount of iterations: '))
 
     def __init__(self):
         self.root = ElementTree.Element('file')
 
     def addUserTweets(self, user):
+        """Gets the tweets from a user via its timeline and creates a Tweet object each time"""
         try:
             timeline = self.corpus.getUserTimeline(self.twitter, user.screen_name)
         except urllib.request.HTTPError:
@@ -47,6 +57,7 @@ class Handler:
             user.tweets.append(tweet)
 
     def addUsers(self, name):
+        """Get followers of a certain user and add it to the corpus.users array"""
         try:
             followers = self.corpus.getUserFollowers(self.twitter, name)
         except urllib.request.HTTPError:
@@ -70,38 +81,36 @@ class Handler:
                 self.corpus.users.append(user)
 
     def startHandling(self, name):
+        """General method to handle all data"""
         self.addUsers(name)
         for i in range(self.steps):
             if (self.corpus.users[i].protected):
                 continue
             else:
                 self.addUsers(self.corpus.users[i].screen_name)
-            #yn = input('\nGather new users? [y/n]:\t')
-            #if (not self.corpus.users[i].protected):
-                #i = i + 1
-                #self.startHandling(self.corpus.users[i].screen_name)
-                #break
-        print('Reading tweets from all users, please wait:\n')
         for k, user in enumerate(self.corpus.users):
             if(not user.protected):
                 self.addUserTweets(user)
-            sys.stdout.write("\r%d%%" % int((k * 100) / len(self.corpus.users)))
+            sys.stdout.write("\rReading tweets from all users, please wait: %d%%" % int((k * 100) / len(self.corpus.users)))
             sys.stdout.flush()
         friender = Friender(self.corpus)
         friender.friendHandler()
-        for user in self.corpus.users:
-            self.createUserEntry(user)
         while(True):
-            yn = input('\nCreate outputfile? [y/n]:\t')
-            if(yn is 'y'):
+            mode = input('\nSelect mode:\n\n[p] Print all data in the console\n[o] Create an outputfile\n[q] Quit')
+            if mode == 'p':
+                self.printData()
+                break
+            elif mode == 'o':
+                for j, user in enumerate(self.corpus.users):
+                    self.createUserEntry(user)
+                    print ('Created user Entry for: ' + str(j))
                 self.createOutputFile()
                 break
-            elif(yn is 'n'):
+            elif mode == 'q':
                 break
-            else:
-                print('Please insert y or n')
 
     def createOutputFile(self):
+        """Creates the outputfile"""
         xmlString = ElementTree.tostring(self.root, encoding="UTF-8")
         string = BeautifulSoup(xmlString).prettify()
         output = open('output_' + str(datetime.datetime.now()) + '.xml', 'w+')
@@ -109,6 +118,7 @@ class Handler:
         output.close
 
     def createUserEntry(self, user):
+        """Creates an entry for a user"""
         entry = ElementTree.SubElement(self.root, 'user')
         ElementTree.SubElement(entry, 'id').text = str(user.uid)
         ElementTree.SubElement(entry, 'name').text = str(user.name)
@@ -131,11 +141,35 @@ class Handler:
                 ElementTree.SubElement(tweet, 'created_at').text = str(tweetEntry.createdAt)
                 ElementTree.SubElement(tweet, 'is_retweet').text = str(tweetEntry.retweeted)
                 if (tweetEntry.isFriendRequest):
-                        ElementTree.SubElement(tweet, 'friendrequest_to_id').text = str(tweetEntry.FriendRequestToId)
+                        ElementTree.SubElement(tweet, 'friendrequest_to_id').text = str(tweetEntry.friendRequestToId)
                 if (tweetEntry.isReply):
                     ElementTree.SubElement(tweet, 'reply_to_id').text = str(tweetEntry.replyTo)
                 #for hashtag in tweetEntry.hashtags:
                 #    ElementTree.SubElement(tweet, 'hashtag').text = str(hashtag)
+
+    def printData(self):
+        """Prints the raw data in the terminal"""
+        for i, user in enumerate(self.corpus.users):
+            print('User #' + str(i + 1) + ':')
+            print('\tID:\t\t' + str(user.uid))
+            print('\tScreen Name:\t' + str(user.screen_name))
+            print('\tName:\t' + str(user.name))
+            print('\tCreated at:\t' + str(user.createdAt))
+            print('\tDescription:\t' + str(user.description))
+            print('\tProtected:\t' + str(user.protected))
+            print('\tFriends:\t')
+            for k, friend in enumerate(user.friends):
+                print('\t\tFriend #' + str(k + 1) + ':\t' + str(friend))
+            print('\tTimeline:')
+            for j, tweet in enumerate(user.tweets):
+                print('\t\tTweet #' + str(j + 1) + ':')
+                print('\t\tID:\t\t' + str(tweet.tid))
+                print('\t\tCreated at:\t' + str(tweet.createdAt))
+                if(tweet.isReply):
+                    print('\t\tReply to ID:\t' + str(tweet.replyTo))
+                if(tweet.isFriendRequest):
+                    print('\t\tFriendrequest to ID:\t' + str(tweet.friendRequestToId))
+            print('==============================================')
 
 
 def main():

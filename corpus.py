@@ -1,20 +1,9 @@
 # -*- coding: utf-8 -*-
 
 """
-Corpus Module for the DSSNTweetCorpus Project
-This Module contains the main function and should be called as the main class for this project.
-
-Currently it just gives an outputstream of all current public tweets with '#vote5sos' in it,
-since it is the most popular hashtag for now. This project is not done and will need a proper
-object to handle the tweets with their usernames, id's etc.
-
-Need to figure out how the Bot is handling the text and how the text should be formatted.
-
-Dependencies:     python twitter API-tools from: http://mike.verdone.ca/twitter/
-                  consumer keys and tokens for the APP in order to use twitters API
-
-Problems:  Rate limit. Rate limit is set for a 15 minute window. statuses calls are limited to
-           180 calls, friends / followers calls to 30.
+Corpus Module for the DSSNTweetCorpus Project.
+It handles the authentification and rate limit handler.
+It contains the main array with all users in it as well as the userID array
 
 @author: Robert R.
 """
@@ -23,10 +12,6 @@ from twitter import *
 import os
 import time
 import sys
-#from tweet import Tweet
-#from user import User
-#import urllib
-#import shutil
 
 
 class Corpus:
@@ -39,9 +24,11 @@ class Corpus:
     ids = []
 
     def __init__(self, keys):
+        """keys.txt is the file that contains the authorization tokens and keys"""
         self.keys = keys
 
     def readKeys(self):
+        """Reads the keys.txt file"""
         k = open(self.keys, 'r', encoding="utf8")
         keys = []
         for line in k:
@@ -52,6 +39,7 @@ class Corpus:
         return keys
 
     def oAuthDance(self, keys):
+        """OAuth Dance with Twitter"""
         MY_TWITTER_CREDS = os.path.expanduser('~/.my_app_credentials')
         CONSUMER_KEY = keys[0]
         CONSUMER_SECRET = keys[1]
@@ -63,6 +51,7 @@ class Corpus:
         return auth
 
     def getUserTimeline(self, twitter, name):
+        """Returns the timeline of a certain user"""
         if self.currentTimeline < self.TIMELINE_RATE_LIMIT:
             timeline = twitter.statuses.user_timeline(screen_name=name)
             self.currentTimeline = self.currentTimeline + 1
@@ -72,6 +61,7 @@ class Corpus:
         return timeline
 
     def getUserFollowers(self, twitter, name):
+        """Returns the Followers of a certain user"""
         if self.currentFollower < self.FOLLOWER_RATE_LIMIT:
             followers = twitter.followers.list(cursor=-1, screen_name=name, count=200, skip_status=True, include_user_entities=True)
             self.currentFollower = self.currentFollower + 1
@@ -82,10 +72,10 @@ class Corpus:
         return followers
 
     def halt(self):
-        print('Rate limit exceeded, please wait:\n')
+        """If rate limit is exceeded this method waits 15 minuts"""
         for i in range(900):
             time.sleep(1)
-            sys.stdout.write("\r%d%%" % int(i / 9))
+            sys.stdout.write("\rRate limit exceeded, please wait: %d%%" % int(i / 9))
             sys.stdout.flush()
         self.currentTimeline = 0
         self.currentFollower = 0

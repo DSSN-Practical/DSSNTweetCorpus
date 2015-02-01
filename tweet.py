@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Object class for tweets
+Object class for tweets which contains data of a single tweet.
+
+@author: Robert R.
 """
 
 
@@ -13,6 +15,6 @@ class Tweet(object):
     replyTo = None
     retweeted = False
     isFriendRequest = False
-    FriendRequestToId = 0
+    friendRequestToId = 0
     #nto for now causes errors
     hashtags = []
