@@ -22,6 +22,7 @@ import urllib
 import datetime
 import xml.etree.ElementTree as ElementTree
 import sys
+import os
 
 
 class Handler:
@@ -80,6 +81,12 @@ class Handler:
                 user.protected = tUser['protected']
                 self.corpus.users.append(user)
 
+    def createDir(self):
+        outDir = 'output' + str(datetime.datetime.now())
+        if not os.path.exists(outDir):
+            os.makedirs(outDir)
+        return outDir
+
     def startHandling(self, name):
         """General method to handle all data"""
         self.addUsers(name)
@@ -94,31 +101,66 @@ class Handler:
             sys.stdout.write("\rReading tweets from all users, please wait: %d%%" % int((k * 100) / len(self.corpus.users)))
             sys.stdout.flush()
         friender = Friender(self.corpus)
-        friender.friendHandler()
+        friender.followHandler()
         while(True):
             mode = input('\nSelect mode:\n\n[p] Print all data in the console\n[o] Create an outputfile\n[q] Quit')
             if mode == 'p':
                 self.printData()
                 break
             elif mode == 'o':
+                outDir = self.createDir()
                 for j, user in enumerate(self.corpus.users):
-                    self.createUserEntry(user)
+                    self.createOutputFile(user, self.createUserEntry(user), outDir)
                     print ('Created user Entry for: ' + str(j))
-                self.createOutputFile()
+                #self.createOutputFile()
                 break
             elif mode == 'q':
                 break
 
-    def createOutputFile(self):
+    def createOutputFile(self, user, soup, outDir):
         """Creates the outputfile"""
-        xmlString = ElementTree.tostring(self.root, encoding="UTF-8")
-        string = BeautifulSoup(xmlString).prettify()
-        output = open('output_' + str(datetime.datetime.now()) + '.xml', 'w+')
-        output.write(string)
+        #xmlString = ElementTree.tostring(self.root, encoding="UTF-8")
+        #string = BeautifulSoup(xmlString).prettify()
+        output = open(outDir + '/' + user.screen_name + '.xml', 'w+')
+        output.write(soup.prettify())
         output.close
 
     def createUserEntry(self, user):
         """Creates an entry for a user"""
+        soup = BeautifulSoup(features='xml')
+        soup.append(soup.new_tag('id'))
+        soup.id.append(str(user.uid))
+        soup.append(soup.new_tag('user_name'))
+        soup.user_name.append(str(user.name))
+        soup.append(soup.new_tag('screen_name'))
+        soup.screen_name.append(str(user.screen_name))
+        soup.append(soup.new_tag('created_at'))
+        soup.created_at.append(str(user.createdAt))
+        soup.append(soup.new_tag('description', str(user.description)))
+        soup.description.append(str(user.description))
+        if (len(user.followers) > 0):
+            soup.append(soup.new_tag('followers'))
+            for follower in user.followers:
+                soup.followers.append(soup.new_tag('follower_id'))
+                soup.follower_id.append(str(follower))
+        if (len(user.tweets) > 0):
+            soup.append(soup.new_tag('timeline'))
+            for tweetEntry in user.tweets:
+                soup.timeline.append(soup.new_tag('tweet'))
+                soup.tweet.append(soup.new_tag('tweet_id'))
+                soup.tweet_id.append(str(tweetEntry.tid))
+                soup.tweet.append(soup.new_tag('tweet_text'))
+                soup.tweet_text.append(str(tweetEntry.text))
+                soup.tweet.append(soup.new_tag('tweet_time'))
+                soup.tweet_time.append(str(tweetEntry.createdAt))
+                if (tweetEntry.isFollowRequest):
+                    soup.tweet.append(soup.new_tag('is_followrequest'))
+                    soup.is_followrequest.append(str(tweetEntry.isFollowRequest))
+                    soup.tweet.append(soup.new_tag('follow_request_id'))
+                    soup.follow_request_id.append(str(tweetEntry.followRequestToId))
+        return soup
+
+        """
         entry = ElementTree.SubElement(self.root, 'user')
         ElementTree.SubElement(entry, 'id').text = str(user.uid)
         ElementTree.SubElement(entry, 'name').text = str(user.name)
@@ -146,6 +188,7 @@ class Handler:
                     ElementTree.SubElement(tweet, 'reply_to_id').text = str(tweetEntry.replyTo)
                 #for hashtag in tweetEntry.hashtags:
                 #    ElementTree.SubElement(tweet, 'hashtag').text = str(hashtag)
+        """
 
     def printData(self):
         """Prints the raw data in the terminal"""

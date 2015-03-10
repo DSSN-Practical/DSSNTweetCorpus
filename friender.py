@@ -11,25 +11,25 @@ class Friender:
         """Corpus must be not empty"""
         self.corpus = corpus
 
-    def setUserFriends(self, user):
+    def setUserFollowers(self, user):
         """Set a random sample of users as friends of a certain user"""
         if len(user.tweets) <= len(self.corpus.ids):
-            user.friends = random.sample(self.corpus.ids, random.randint(1, len(user.tweets)))
+            user.followers = random.sample(self.corpus.ids, random.randint(1, len(user.tweets)))
         else:
-            user.friends = random.sample(self.corpus.ids, random.randint(1, len(self.corpus.ids)))
+            user.followers = random.sample(self.corpus.ids, random.randint(1, len(self.corpus.ids)))
 
-    def setUserFriendrequests(self, user):
+    def setUserFollowerrequests(self, user):
         """For each friend assign one Tweet as a friendrequest"""
-        requests = random.sample(user.tweets, len(user.friends))
+        requests = random.sample(user.tweets, len(user.followers))
         for i, request in enumerate(requests):
-            request.isFriendRequest = True
-            request.friendRequestToId = user.friends[i]
+            request.isFollowRequest = True
+            request.followRequestToId = user.followers[i]
 
-    def friendHandler(self):
+    def followHandler(self):
         """General method that handles the friends"""
         for user in self.corpus.users:
             if len(user.tweets) > 1:
-                self.setUserFriends(user)
-                self.setUserFriendrequests(user)
+                self.setUserFollowers(user)
+                self.setUserFollowerrequests(user)
             else:
-                user.friends = []
+                user.followers = []

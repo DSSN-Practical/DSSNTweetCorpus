@@ -16,6 +16,6 @@ class User(object):
     nrFriends = 0
     nrFollowers = 0
     tweets = []
-    friends = []
+    followers = []
     #only used for GET timeline
     protected = False
