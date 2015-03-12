@@ -20,6 +20,7 @@ from bs4 import BeautifulSoup
 
 import urllib
 import datetime
+from dateutil.parser import parse
 import xml.etree.ElementTree as ElementTree
 import sys
 import os
@@ -32,6 +33,7 @@ class Handler:
     startUser = input('Insert the screen_name of the initial twitter user: ')
     twitter = Twitter(auth=corpus.oAuthDance(corpus.readKeys()))
     steps = int(input('Insert the amount of iterations: '))
+    maxtime = int(input('Insert the respective time (in days)')) * 86400
 
     def __init__(self):
         self.root = ElementTree.Element('file')
@@ -42,20 +44,30 @@ class Handler:
             timeline = self.corpus.getUserTimeline(self.twitter, user.screen_name)
         except urllib.request.HTTPError:
             print('An Error Occured, please restart the application.')
+        tweets = []
         for ttweet in timeline:
             tweet = Tweet()
             tweet.tid = ttweet['id']
             tweet.text = ttweet['text']
             tweet.createdAt = ttweet['created_at']
-
-            #doesn't work for now'
-            #for hashtag in ttweet['entities']['hashtags']:
-            #    tweet.hashtags.append(hashtag)
             tweet.retweeted = ttweet['retweeted']
             if (not ttweet['in_reply_to_user_id'] is None):
                 tweet.isReply = True
                 tweet.replyTo = ttweet['in_reply_to_user_id']
-            user.tweets.append(tweet)
+            tweets.append(tweet)
+        user.tweets = self.createDeltaTimes(tweets)
+
+    def createDeltaTimes(self, tweets):
+        if(len(tweets) > 0):
+            delta = parse(tweets[0].createdAt) - parse(tweets[-1].createdAt)
+            for i, tweet in enumerate(tweets):
+                if i == 0:
+                    tweet.deltaTime = 0
+                else:
+                    subdelta = parse(tweet.createdAt) - parse(tweets[0].createdAt)
+                    percentage = subdelta.total_seconds() / delta.total_seconds()
+                    tweet.deltaTime = int(self.maxtime * abs(percentage))
+        return tweets
 
     def addUsers(self, name):
         """Get followers of a certain user and add it to the corpus.users array"""
@@ -127,6 +139,7 @@ class Handler:
 
     def createUserEntry(self, user):
         """Creates an entry for a user"""
+        """
         soup = BeautifulSoup(features='xml')
         soup.append(soup.new_tag('id'))
         soup.id.append(str(user.uid))
@@ -140,9 +153,9 @@ class Handler:
         soup.description.append(str(user.description))
         if (len(user.followers) > 0):
             soup.append(soup.new_tag('followers'))
-            for follower in user.followers:
+            for i, follower in enumerate(user.followers):
                 soup.followers.append(soup.new_tag('follower_id'))
-                soup.follower_id.append(str(follower))
+                soup.follower_id.insert(i + 1, str(follower))
         if (len(user.tweets) > 0):
             soup.append(soup.new_tag('timeline'))
             for tweetEntry in user.tweets:
@@ -158,8 +171,6 @@ class Handler:
                     soup.is_followrequest.append(str(tweetEntry.isFollowRequest))
                     soup.tweet.append(soup.new_tag('follow_request_id'))
                     soup.follow_request_id.append(str(tweetEntry.followRequestToId))
-        return soup
-
         """
         entry = ElementTree.SubElement(self.root, 'user')
         ElementTree.SubElement(entry, 'id').text = str(user.uid)
@@ -167,13 +178,13 @@ class Handler:
         ElementTree.SubElement(entry, 'screen_name').text = str(user.screen_name)
         ElementTree.SubElement(entry, 'created_at').text = str(user.createdAt)
         ElementTree.SubElement(entry, 'description').text = str(user.description)
-        ElementTree.SubElement(entry, 'Number_of_friends').text = str(user.nrFriends)
-        ElementTree.SubElement(entry, 'Number_of_followers').text = str(user.nrFollowers)
+        #ElementTree.SubElement(entry, 'Number_of_friends').text = str(user.nrFriends)
+        #ElementTree.SubElement(entry, 'Number_of_followers').text = str(user.nrFollowers)
         ElementTree.SubElement(entry, 'protected').text = str(user.protected)
-        if (len(user.friends) > 0):
-            friends = ElementTree.SubElement(entry, 'friends')
-            for friend in user.friends:
-                ElementTree.SubElement(friends, 'id').text = str(friend)
+        if (len(user.followers) > 0):
+            followers = ElementTree.SubElement(entry, 'followers')
+            for follower in user.followers:
+                ElementTree.SubElement(followers, 'id').text = str(follower)
         if (len(user.tweets) > 0):
             timeline = ElementTree.SubElement(entry, 'timeline')
             for tweetEntry in user.tweets:
@@ -181,14 +192,17 @@ class Handler:
                 ElementTree.SubElement(tweet, 'id').text = str(tweetEntry.tid)
                 ElementTree.SubElement(tweet, 'text').text = tweetEntry.text
                 ElementTree.SubElement(tweet, 'created_at').text = str(tweetEntry.createdAt)
+                ElementTree.SubElement(tweet, 'delta').text = str(tweetEntry.deltaTime)
                 ElementTree.SubElement(tweet, 'is_retweet').text = str(tweetEntry.retweeted)
-                if (tweetEntry.isFriendRequest):
-                        ElementTree.SubElement(tweet, 'friendrequest_to_id').text = str(tweetEntry.friendRequestToId)
+                if (tweetEntry.isFollowRequest):
+                        ElementTree.SubElement(tweet, 'followrequest_to_id').text = str(tweetEntry.followRequestToId)
                 if (tweetEntry.isReply):
                     ElementTree.SubElement(tweet, 'reply_to_id').text = str(tweetEntry.replyTo)
                 #for hashtag in tweetEntry.hashtags:
                 #    ElementTree.SubElement(tweet, 'hashtag').text = str(hashtag)
-        """
+        soup = BeautifulSoup(ElementTree.tostring(self.root, encoding="UTF-8"), features='xml')
+        self.root.clear()
+        return soup
 
     def printData(self):
         """Prints the raw data in the terminal"""

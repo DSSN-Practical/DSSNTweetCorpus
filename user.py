@@ -17,5 +17,6 @@ class User(object):
     nrFollowers = 0
     tweets = []
     followers = []
+    deltaTime = 0
     #only used for GET timeline
     protected = False
