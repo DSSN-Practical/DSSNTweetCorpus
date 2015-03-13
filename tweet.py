@@ -16,5 +16,6 @@ class Tweet(object):
     retweeted = False
     isFollowRequest = False
     followRequestToId = 0
+    deltaTime = 0
     #nto for now causes errors
     hashtags = []

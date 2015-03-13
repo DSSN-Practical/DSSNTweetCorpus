@@ -53,7 +53,7 @@ class Corpus:
     def getUserTimeline(self, twitter, name):
         """Returns the timeline of a certain user"""
         if self.currentTimeline < self.TIMELINE_RATE_LIMIT:
-            timeline = twitter.statuses.user_timeline(screen_name=name)
+            timeline = twitter.statuses.user_timeline(screen_name=name, count=3200, since_id=1)
             self.currentTimeline = self.currentTimeline + 1
         else:
             self.halt()
