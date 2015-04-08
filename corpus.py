@@ -71,6 +71,10 @@ class Corpus:
             followers = self.getUserFollowers(twitter, name)
         return followers
 
+    def getIds(self, twitter, ids):
+        tweets = twitter.statuses.lookup(id=ids)
+        return tweets
+
     def halt(self):
         """If rate limit is exceeded this method waits 15 minuts"""
         for i in range(900):
@@ -79,3 +83,14 @@ class Corpus:
             sys.stdout.flush()
         self.currentTimeline = 0
         self.currentFollower = 0
+
+def main():
+    corpus = Corpus('keys.txt')
+    twitter = Twitter(auth=corpus.oAuthDance(corpus.readKeys()))
+    tweets = corpus.getIds(twitter, input('Insert the tweet IDs: '))
+    for tweet in tweets:
+        print(tweet['id'] + ':\n')
+        print('\t' + tweet['text'])
+
+if __name__ == '__main__':
+    main()

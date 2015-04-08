@@ -79,7 +79,7 @@ class Handler:
             user = User()
             iid = tUser['id']
             if (iid in self.corpus.ids):
-                print('ding')
+                #print('ding')
                 continue
             else:
                 user.uid = iid
@@ -91,6 +91,8 @@ class Handler:
                 user.nrFriends = tUser['friends_count']
                 user.nrFollowers = tUser['followers_count']
                 user.protected = tUser['protected']
+                user.deltaTime = 0
+                #Delta Time could need workaround
                 self.corpus.users.append(user)
 
     def createDir(self):
@@ -176,10 +178,11 @@ class Handler:
         ElementTree.SubElement(entry, 'id').text = str(user.uid)
         ElementTree.SubElement(entry, 'name').text = str(user.name)
         ElementTree.SubElement(entry, 'screen_name').text = str(user.screen_name)
-        ElementTree.SubElement(entry, 'created_at').text = str(user.createdAt)
+        #ElementTree.SubElement(entry, 'created_at').text = str(user.createdAt)
         ElementTree.SubElement(entry, 'description').text = str(user.description)
         #ElementTree.SubElement(entry, 'Number_of_friends').text = str(user.nrFriends)
         #ElementTree.SubElement(entry, 'Number_of_followers').text = str(user.nrFollowers)
+        ElementTree.SubElement(entry, 'delta').text = str(user.deltaTime)
         ElementTree.SubElement(entry, 'protected').text = str(user.protected)
         if (len(user.followers) > 0):
             followers = ElementTree.SubElement(entry, 'followers')
@@ -191,7 +194,7 @@ class Handler:
                 tweet = ElementTree.SubElement(timeline, 'tweet')
                 ElementTree.SubElement(tweet, 'id').text = str(tweetEntry.tid)
                 ElementTree.SubElement(tweet, 'text').text = tweetEntry.text
-                ElementTree.SubElement(tweet, 'created_at').text = str(tweetEntry.createdAt)
+                #ElementTree.SubElement(tweet, 'created_at').text = str(tweetEntry.createdAt)
                 ElementTree.SubElement(tweet, 'delta').text = str(tweetEntry.deltaTime)
                 ElementTree.SubElement(tweet, 'is_retweet').text = str(tweetEntry.retweeted)
                 if (tweetEntry.isFollowRequest):

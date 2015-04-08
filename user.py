@@ -14,6 +14,7 @@ class User(object):
     createdAt = ''
     description = ''
     nrFriends = 0
+    #currently not used
     nrFollowers = 0
     tweets = []
     followers = []
